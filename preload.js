@@ -1,0 +1,40 @@
+'use strict';
+const { contextBridge, ipcRenderer } = require('electron');
+const inv = (c, ...a) => ipcRenderer.invoke(c, ...a);
+const on = (c, f) => { const l = (_, p) => f(p); ipcRenderer.on(c, l); return () => ipcRenderer.removeListener(c, l); };
+
+contextBridge.exposeInMainWorld('api', {
+  platform: process.platform,
+  state: () => inv('state:get'),
+  sys: () => inv('sys:get'),
+  snipSave: s => inv('snip:save', s),
+  snipDel: id => inv('snip:del', id),
+  bmSave: b => inv('bm:save', b),
+  bmDel: id => inv('bm:del', id),
+  bmOpen: id => inv('bm:open', id),
+  pick: dir => inv('dialog:pick', !!dir),
+  clipDel: id => inv('clip:del', id),
+  clipPin: id => inv('clip:pin', id),
+  clipClear: () => inv('clip:clear'),
+  copy: t => inv('copy', t),
+  paste: t => inv('paste', t),
+  settings: p => inv('settings:set', p),
+  settingsReset: () => inv('settings:reset'),
+  appearanceReset: () => inv('appearance:reset'),
+  shortcuts: m => inv('shortcuts:set', m),
+  shortcutsReset: () => inv('shortcuts:reset'),
+  shortcutFails: () => inv('shortcuts:fails'),
+  win: (name, arg) => inv('win:open', name, arg),
+  closeWin: () => inv('win:close'),
+  launcherMove: (x, y) => inv('launcher:move', x, y),
+  launcherSave: () => inv('launcher:save'),
+  dataExport: () => inv('data:export'),
+  dataImport: () => inv('data:import'),
+  backup: () => inv('data:backup'),
+  restore: () => inv('data:restore'),
+  clear: k => inv('data:clear', k),
+  term: l => inv('term:run', l),
+  onState: f => on('state:changed', f),
+  onSys: f => on('sys:update', f),
+  onNav: f => on('nav', f)
+});

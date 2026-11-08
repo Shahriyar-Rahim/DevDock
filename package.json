@@ -7,7 +7,11 @@
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "test": "node --test",
+    "integrations:install": "node scripts/install-integrations.js",
+    "integrations:uninstall": "node scripts/uninstall-integrations.js",
+    "pack": "electron-builder --dir"
   },
   "devDependencies": {
     "electron": "^31.0.0",
@@ -16,10 +20,64 @@
   "build": {
     "appId": "com.devdock.app",
     "productName": "DevDock",
-    "files": ["main.js", "preload.js", "renderer.js", "index.html", "index.css"],
-    "linux": { "target": ["deb", "AppImage"], "category": "Development" },
-    "win": { "target": "nsis" },
-    "mac": { "target": "dmg", "category": "public.app-category.developer-tools" },
-    "nsis": { "deleteAppDataOnUninstall": false }
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer.js",
+      "index.html",
+      "index.css",
+      "core.js",
+      "scripts/**",
+      "integrations/**"
+    ],
+    "linux": {
+      "target": [
+        "deb",
+        "AppImage"
+      ],
+      "category": "Development",
+      "maintainer": "Shahriyar <devdock@example.com>",
+      "executableName": "devdock-app",
+      "extraFiles": [
+        {
+          "from": "scripts/devdock-wrapper.sh",
+          "to": "bin/devdock"
+        }
+      ]
+    },
+    "win": {
+      "target": "nsis",
+      "extraFiles": [
+        {
+          "from": "scripts/devdock-wrapper.cmd",
+          "to": "bin/devdock.cmd"
+        }
+      ]
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.developer-tools"
+    },
+    "nsis": {
+      "deleteAppDataOnUninstall": false,
+      "include": "build/installer.nsh"
+    },
+    "asarUnpack": [
+      "core.js",
+      "scripts/**",
+      "integrations/**"
+    ],
+    "deb": {
+      "afterInstall": "scripts/deb-postinst.sh",
+      "afterRemove": "scripts/deb-postrm.sh"
+    }
+  },
+  "bin": {
+    "devdock": "scripts/cli.js"
+  },
+  "homepage": "https://github.com/shahriyar/devdock",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shahriyar/devdock.git"
   }
 }
